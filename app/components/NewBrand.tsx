@@ -14,6 +14,7 @@ import { FiPlus } from "react-icons/fi";
 import { RxDownload } from "react-icons/rx";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { BrandData, createBrand } from "../apis/createBrand";
 
 const stepsArray = [
   {
@@ -244,17 +245,18 @@ const stepsArray = [
 ];
 
 const generateInitialValues = () => {
-  const values: { [key: string]: string } = {};
+  const values: { [key: string]: string | File } = {}; // Allow both string and File types
   stepsArray.forEach((step) => {
     step.inputs?.forEach((field) => {
-      values[field.label] = "";
+      values[field.label] = ""; // String fields
     });
     step.uploads?.forEach((upload) => {
-      values[upload.label] = ""; // for file/image
+      values[upload.label] = {} as File; // File fields, initializing with an empty file object
     });
   });
   return values;
 };
+
 
 const generateValidationSchema = (stepIndex: number) => {
   const step = stepsArray[stepIndex];
@@ -291,7 +293,6 @@ const NewBrand = () => {
   };
 
   const prevStep = () => {
-    
     if (step >= 1) setStep(step - 1);
   };
   return (
@@ -316,9 +317,16 @@ const NewBrand = () => {
         <Formik
           initialValues={generateInitialValues()}
           validationSchema={generateValidationSchema(step)}
-          onSubmit={(values) => {
-            console.log("Final Form Values =>", values);
-            // send `values` to backend here
+          onSubmit={async (values, actions) => {
+            try {
+              console.log("Form values:", values);
+              await createBrand(values as BrandData);
+              // toast.success("Brand created successfully!");
+              // actions.resetForm();
+              // setOpen(false); // Close drawer after successful creation
+            } catch (error: any) {
+              // toast.error("Failed to create brand: " + error.message);
+            }
           }}
         >
           {({
@@ -388,7 +396,7 @@ const NewBrand = () => {
                           onChange={(e) =>
                             setFieldValue(input.label, e.target.value)
                           }
-                          value={values[input.label]}
+                          value={values[input.label] as string}
                           onBlur={() => setFieldTouched(input.label, true)}
                         />
                       ) : (
@@ -399,7 +407,7 @@ const NewBrand = () => {
                           onChange={(e) =>
                             setFieldValue(input.label, e.target.value)
                           }
-                          value={values[input.label]}
+                          value={values[input.label] as string}
                           onBlur={() => setFieldTouched(input.label, true)}
                         />
                       )}
@@ -505,33 +513,37 @@ const NewBrand = () => {
 
               {/* Footer */}
               <div className="py-4 px-6 border-t">
-                <div className={`w-full flex ${step > 0 ? "justify-between" : "justify-end"}`}>
-                {step > 0 && (
-  <button
-    type="button"
-    onClick={() => {
-      const currentStepFields = [
-        ...(currentStep.inputs?.map((i) => i.label) || []),
-        ...(currentStep.uploads?.map((u) => u.label) || []),
-      ];
+                <div
+                  className={`w-full flex ${
+                    step > 0 ? "justify-between" : "justify-end"
+                  }`}
+                >
+                  {step > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentStepFields = [
+                          ...(currentStep.inputs?.map((i) => i.label) || []),
+                          ...(currentStep.uploads?.map((u) => u.label) || []),
+                        ];
 
-      // Clear touched fields for current step
-      const updatedTouched: { [key: string]: boolean } = {};
-      currentStepFields.forEach((field) => {
-        updatedTouched[field] = false;
-      });
+                        // Clear touched fields for current step
+                        const updatedTouched: { [key: string]: boolean } = {};
+                        currentStepFields.forEach((field) => {
+                          updatedTouched[field] = false;
+                        });
 
-      // Reset touched using Formik's API
-      setTouched(updatedTouched, false);
+                        // Reset touched using Formik's API
+                        setTouched(updatedTouched, false);
 
-      // Go to previous step
-      prevStep();
-    }}
-    className="bg-white text-[#919191] border border-[#919191] rounded-lg px-4 py-2 cursor-pointer"
-  >
-    Previous Step
-  </button>
-)}
+                        // Go to previous step
+                        prevStep();
+                      }}
+                      className="bg-white text-[#919191] border border-[#919191] rounded-lg px-4 py-2 cursor-pointer"
+                    >
+                      Previous Step
+                    </button>
+                  )}
 
                   {step < stepsArray.length - 1 ? (
                     <button
