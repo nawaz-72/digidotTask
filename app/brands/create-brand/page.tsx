@@ -12,6 +12,8 @@ import { TbCloudUpload } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import ImageVideo from "@/app/components/createBrand/ImageVideo";
+import BrandColorPicker from "@/app/components/createBrand/BrandColorPicker";
 
 const documents = [
   { name: "Company Details.pdf", date: "02/03/2025" },
@@ -254,7 +256,7 @@ const page = () => {
           </div>
 
           <div className="w-[97%] flex flex-col gap-6">
-            <div className="bg-white flex flex-col gap-4 py-4 px-6 rounded-lg">
+            {/* <div className="bg-white flex flex-col gap-4 py-4 px-6 rounded-lg">
               <div className=" flex w-full justify-between items-center ">
                 <h1 className="text-lg xl:text-xl font-dm-sans font-semibold">Doucments</h1>
                 <button className="py-0.5 px-1 flex items-center font-medium font-dem-Sans text-xs xl:text-sm bg-[#DDDDDD8C] rounded-sm">
@@ -283,7 +285,8 @@ const page = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
+            <BrandColorPicker />
 
             <div className="bg-white flex flex-col gap-4 py-4 px-6 rounded-lg">
               <div className=" flex w-full justify-between items-center ">
@@ -303,8 +306,8 @@ const page = () => {
                 />
               </div>
             </div>
-
-            <div className="bg-white flex flex-col gap-4 py-4 px-6 rounded-lg">
+                <ImageVideo/>
+            {/* <div className="bg-white flex flex-col gap-4 py-4 px-6 rounded-lg">
               <div className=" flex w-full justify-between items-center ">
                 <h1 className="text-lg xl:text-xl font-dm-sans font-semibold">Images & Videos</h1>
                 <button className="py-0.5 px-2 flex items-center font-medium font-dem-Sans text-xs xl:text-sm bg-[#DDDDDD8C] rounded-sm gap-2 cursor-pointer">
@@ -321,7 +324,7 @@ const page = () => {
                   className="bg-cover rounded-lg w-full h-full"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </form>
       </div>
