@@ -1,8 +1,9 @@
 // createBrand.ts
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
-const storage = getStorage();
+
 import { db } from "../firebase";
+import { getImageURL } from "./getImgUrl";
 
 export type BrandData = {
     "Brand Name": string;
@@ -38,24 +39,34 @@ export type BrandData = {
 
   export const createBrand = async (brandData: BrandData) => {
     try {
+      const storage = getStorage();
+      console.log("in create brand")
       // Upload files first
       const companyDocFile = brandData["UAdd Company Documents"];
       const logoFile = brandData["Add Logo"];
   
-      const uploadAndGetURL = async (file: File, path: string) => {
-        const storageRef = ref(storage, path);
-        await uploadBytes(storageRef, file);
-        return await getDownloadURL(storageRef);
-      };
+      // const uploadAndGetURL = async (file: File, path: string) => {
+      //   const storageRef = ref(storage, path);
+      //   console.log("Uploading via Firebase SDK:", path, file);
+      //   await uploadBytes(storageRef, file, {
+      //     contentType: file.type
+      //   });
+      //   return await getDownloadURL(storageRef);
+      // };
   
-      const companyDocUrl = await uploadAndGetURL(
-        companyDocFile,
-        `brands/${Date.now()}_companyDoc`
-      );
-      const logoUrl = await uploadAndGetURL(
-        logoFile,
-        `brands/${Date.now()}_logo`
-      );
+      // const companyDocUrl = await uploadAndGetURL(
+      //   companyDocFile,
+      //   `brands/${Date.now()}_companyDoc`
+      // );
+      // const logoUrl = await uploadAndGetURL(
+      //   logoFile,
+      //   `brands/${Date.now()}_logo`
+      // );
+
+      const companyDocUrl = await getImageURL(companyDocFile);
+      const logoUrl = await getImageURL(logoFile);
+
+
   
       // Replace files with their URLs
       const brandDataWithUrls = {

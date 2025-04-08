@@ -15,6 +15,7 @@ import { RxDownload } from "react-icons/rx";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { BrandData, createBrand } from "../apis/createBrand";
+import { useToast } from "shayan-toast-ui"
 
 const stepsArray = [
   {
@@ -245,18 +246,17 @@ const stepsArray = [
 ];
 
 const generateInitialValues = () => {
-  const values: { [key: string]: string | File } = {}; // Allow both string and File types
+  const values: { [key: string]: string | File | null } = {}; // Allow both string and File types
   stepsArray.forEach((step) => {
     step.inputs?.forEach((field) => {
       values[field.label] = ""; // String fields
     });
     step.uploads?.forEach((upload) => {
-      values[upload.label] = {} as File; // File fields, initializing with an empty file object
+      values[upload.label] = null; // File fields, initializing with an empty file object
     });
   });
   return values;
 };
-
 
 const generateValidationSchema = (stepIndex: number) => {
   const step = stepsArray[stepIndex];
@@ -282,8 +282,10 @@ const generateValidationSchema = (stepIndex: number) => {
 };
 
 const NewBrand = () => {
+  const toast = useToast()
   const [step, setStep] = useState(0);
-
+  const [isLoading, setIsLoading] = useState(false);  // Track loading state
+  const [successMessage, setSuccessMessage] = useState("");  // Success message state
   const currentStep = stepsArray[step];
 
   const nextStep = () => {
@@ -314,21 +316,25 @@ const NewBrand = () => {
         </div>
       </DrawerTrigger>
       <DrawerContent className="max-w-[700px] mx-auto">
-        <Formik
+      <Formik
           initialValues={generateInitialValues()}
           validationSchema={generateValidationSchema(step)}
           onSubmit={async (values, actions) => {
             try {
-              console.log("Form values:", values);
-              await createBrand(values as BrandData);
-              // toast.success("Brand created successfully!");
-              // actions.resetForm();
-              // setOpen(false); // Close drawer after successful creation
+              setIsLoading(true);  // Start loader
+              setSuccessMessage(""); // Reset success message
+              console.log("Form submitted. Values:", values);
+              await createBrand(values as BrandData); // This triggers your log and API call
+              setSuccessMessage("Brand successfully created!"); // Set success message
+              toast.addToast("Brand successfully created!")
             } catch (error: any) {
-              // toast.error("Failed to create brand: " + error.message);
+              console.error("Form submit error:", error);
+            } finally {
+              setIsLoading(false); // Stop loader
             }
           }}
         >
+
           {({
             setFieldValue,
             setFieldTouched,
@@ -547,10 +553,11 @@ const NewBrand = () => {
 
                   {step < stepsArray.length - 1 ? (
                     <button
+                      type="button" // 🔥 critical
                       className="text-white px-6 py-2 bg-black rounded-lg cursor-pointer"
-                      type="button"
-                      onClick={async () => {
-                        console.log("show the form", values);
+                      onClick={async (e: any) => {
+                        e.preventDefault(); // 💥 prevents default form submit
+                        e.stopPropagation(); // 🛑 prevents bubbling up to Form
                         const errors = await validateForm();
                         const currentStepFields = [
                           ...(currentStep.inputs?.map((i) => i.label) || []),
@@ -564,7 +571,6 @@ const NewBrand = () => {
                         if (!hasErrors) {
                           nextStep();
                         } else {
-                          // Mark all current step fields as touched
                           currentStepFields.forEach((field) =>
                             setFieldTouched(field, true)
                           );
@@ -575,11 +581,11 @@ const NewBrand = () => {
                     </button>
                   ) : (
                     <button
-                      type="submit"
-                      onClick={() => handleSubmit()}
+                      type="submit" // ✅ This one is fine
                       className="text-white px-6 py-2 bg-black rounded-lg cursor-pointer"
                     >
-                      Submit
+                      {isLoading ? <div className="loading-spinner">Loading...</div>: "Submit"}
+
                     </button>
                   )}
                 </div>
